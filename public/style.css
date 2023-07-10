@@ -149,4 +149,5 @@ i.fa-youtube{
 .flex{
     display: flex;
     align-items: center;
+    justify-content: center;
 }
