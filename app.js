@@ -58,6 +58,8 @@ app.post("/process", async (req, res) => {
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = outputVocalsPath + "/" + "vocals.mp3";
 
+  // pip install spleeter
+  
   const pythonScript = `
 import os
 from spleeter.separator import Separator
