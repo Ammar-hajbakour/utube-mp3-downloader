@@ -50,13 +50,13 @@ app.post("/process", async (req, res) => {
   const fileName = file.name.slice(0, -4);
 
   const filePath = path.join(__dirname,"tmp");
-  const inputFilePath = filePath + "/" + file.name;
+  const inputFilePath = path.join(filePath, file.name);
 
   const outputFileName = new Date() + "-separated_sound";
   const outputDir = path.join(__dirname,"output");
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
-  const vocalsFile = outputVocalsPath + "/" + "vocals.mp3";
+  const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
 
   if(fs.existsSync(inputFilePath)){
     fs.unlink(inputFilePath, (err) => {
