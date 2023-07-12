@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: __dirname,
+    tempFileDir:"/tmp/",
   })
 );
 
@@ -39,8 +39,8 @@ app.post("/process", async (req, res) => {
   if (!req.files || !file) {
     return res.render("index", {...data, message: "No file uploaded" });
   }
-  const _file = path.join(__dirname , file.name)
-  file.mv( _file, (err) => {
+  
+  file.mv("tmp/"+ file.name, (err) => {
     if (err)
       return res.render("index", {
         ...data, loading: false,
@@ -49,15 +49,15 @@ app.post("/process", async (req, res) => {
   });
   const fileName = file.name.slice(0, -4);
 
-  const filePath = path.join(__dirname);
+  const filePath = path.join(__dirname,"tmp");
   const inputFilePath = filePath + "/" + file.name;
 
   const outputFileName = new Date() + "-separated_sound";
-  const outputDir = path.join(__dirname);
+  const outputDir = path.join(__dirname,"output");
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = outputVocalsPath + "/" + "vocals.mp3";
-  
+
   if(fs.existsSync(inputFilePath)){
     fs.unlink(inputFilePath, (err) => {
       if (err) throw new Error(err.message);
