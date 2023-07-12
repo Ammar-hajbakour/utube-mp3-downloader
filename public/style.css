@@ -8,10 +8,13 @@
 body{
   color: white;
   font-family: 'Orbitron', sans-serif;
+  overflow-x: hidden;
   letter-spacing: 1px;
-  height: fit-content;
+  min-height: 100vh;
+  width: 100%;
   display: grid;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: 450px 400px 400px;
   grid-template-areas: "top"
                         "middle"
                         "bottom";
@@ -21,7 +24,7 @@ body{
   grid-area: top;
   width: 100%;
   background-color: red;
-  
+  padding: 0 1rem;
 }
 .middle-container{
   grid-area: middle;
@@ -30,7 +33,9 @@ body{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-block: 2rem;
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: #dedede;
 }
 
 .bottom-container{
@@ -41,7 +46,8 @@ body{
     justify-content: space-between;
 }
 .bottom-container form{
-  width: 100%;
+  width: 90%;
+    margin: auto;
   text-align: center;
   
 }
@@ -59,7 +65,7 @@ body{
   justify-content: flex-end;
   align-items: center;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5rem 0;
   padding-block-start: 2.5rem;
 }
 
