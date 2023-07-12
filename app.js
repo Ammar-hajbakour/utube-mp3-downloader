@@ -87,14 +87,20 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
           message: `File downloading Error : ${err.message}`,
         });
         
+        if(inputFilePath && inputFilePath.endsWith('.mp3')){
+          fs.unlink(inputFilePath.length > 0, (err) => {
+            if (err) throw new Error(err.message);
+          })
+        }
+      }
+      if(inputFilePath.length > 0 && inputFilePath.endsWith('.mp3')){
         fs.unlink(inputFilePath, (err) => {
           if (err) throw new Error(err.message);
         })
       }
-      fs.unlink(inputFilePath, (err) => {
-        if (err) throw new Error(err.message);
-      })
-      deleteDirectory(outputFilePath);
+      if(outputFilePath.length > 0 && outputFilePath.endsWith('-separated_sound')){
+        deleteDirectory(outputFilePath);
+      }
     });
   });
 });
