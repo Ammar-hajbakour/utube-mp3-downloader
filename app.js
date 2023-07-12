@@ -39,8 +39,8 @@ app.post("/process", async (req, res) => {
   if (!req.files || !file) {
     return res.render("index", {...data, message: "No file uploaded" });
   }
-  
-  file.mv("tmp/"+ file.name, (err) => {
+  const _file = path.join(__dirname,"tmp",file.name)
+  file.mv(_file+ file.name, (err) => {
     if (err)
       return res.render("index", {
         ...data, loading: false,
