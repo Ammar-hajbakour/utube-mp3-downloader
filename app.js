@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: "/tmp/",
+    tempFileDir: __dirname,
   })
 );
 
@@ -37,7 +37,7 @@ app.post("/process", async (req, res) => {
   const file = req.files.music;
   
   if (!req.files || !file) {
-    return res.render("index", { message: "No file uploaded" });
+    return res.render("index", {...data, message: "No file uploaded" });
   }
 
   file.mv( file.name, (err) => {
