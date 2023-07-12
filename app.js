@@ -57,26 +57,35 @@ app.post("/process", async (req, res) => {
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = outputVocalsPath + "/" + "vocals.mp3";
+  
+  if(fs.existsSync(inputFilePath)){
+    fs.unlink(inputFilePath, (err) => {
+      if (err) throw new Error(err.message);
+    })
+  }
+  if(fs.existsSync(outputFilePath)){
+    deleteDirectory(outputFilePath);
+  }
 
   // pip install spleeter
-  
+ 
   const pythonScript = `
 import os
 from spleeter.separator import Separator
-
 input_file = os.path.abspath("${inputFilePath}")
 output_dir = os.path.abspath("${outputFilePath}")
-
 separator = Separator('spleeter:2stems')
 separator.separate_to_file(input_file, output_dir, codec='mp3')
-    `;
+`;
 
   const pythonProcess = spawn("python", ["-c", pythonScript]);
 
   pythonProcess.stdout.on("data", (data) => {
+    console.error(data);
   });
 
   pythonProcess.stderr.on("data", (data) => {
+    console.error(data);
   });
 
   pythonProcess.on("close", (code) => {
@@ -87,20 +96,21 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
           message: `File downloading Error : ${err.message}`,
         });
         
-        if(inputFilePath.length > 0 && inputFilePath.endsWith('.mp3')){
+        if(fs.existsSync(inputFilePath)){
           fs.unlink(inputFilePath, (err) => {
             if (err) throw new Error(err.message);
           })
         }
       }
-      if(inputFilePath.length > 0 && inputFilePath.endsWith('.mp3')){
+      if(fs.existsSync(inputFilePath)){
         fs.unlink(inputFilePath, (err) => {
           if (err) throw new Error(err.message);
         })
       }
-      if(outputFilePath.length > 0 && outputFilePath.endsWith('-separated_sound')){
+      if(fs.existsSync(outputFilePath)){
         deleteDirectory(outputFilePath);
       }
+      
     });
   });
 });
