@@ -40,7 +40,7 @@ app.post("/process", async (req, res) => {
     return res.render("index", {...data, message: "No file uploaded" });
   }
   const _file = path.join(__dirname,"tmp",file.name)
-  file.mv(_file+ file.name, (err) => {
+  file.mv(_file, (err) => {
     if (err)
       return res.render("index", {
         ...data, loading: false,
@@ -60,13 +60,14 @@ app.post("/process", async (req, res) => {
 
   if(fs.existsSync(inputFilePath)){
     fs.unlink(inputFilePath, (err) => {
-      if (err) throw new Error(err.message);
+      if (err) console.error(err.message);
     })
   }
   if(fs.existsSync(outputFilePath)){
     deleteDirectory(outputFilePath);
   }
 
+  
   // pip install spleeter
  
   const pythonScript = `
@@ -91,6 +92,7 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
   pythonProcess.on("close", (code) => {
     res.download(vocalsFile, (err) => {
       if (err) {
+        console.error(err.message);
         res.render("index", {
           ...data, loading: false,
           message: `File downloading Error : ${err.message}`,
@@ -98,19 +100,18 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
         
         if(fs.existsSync(inputFilePath)){
           fs.unlink(inputFilePath, (err) => {
-            if (err) throw new Error(err.message);
+            if (err) console.error(err.message);
           })
         }
       }
       if(fs.existsSync(inputFilePath)){
         fs.unlink(inputFilePath, (err) => {
-          if (err) throw new Error(err.message);
+          if (err) console.error(err.message);
         })
       }
       if(fs.existsSync(outputFilePath)){
         deleteDirectory(outputFilePath);
       }
-      
     });
   });
 });

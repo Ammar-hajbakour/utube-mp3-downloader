@@ -101,7 +101,7 @@
             fileLabel.textContent = fileName;
         }); 
 
-        function submitForm() {
+        function submitForm(e) {
             const frm = document.getElementById('upload')[0];
             frm.submit(); // Submit the form
             frm.reset();  // Reset all form data
