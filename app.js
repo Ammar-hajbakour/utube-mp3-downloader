@@ -8,8 +8,6 @@ const fetch = require("node-fetch");
 
 const path = require("path");
 
-const ffmpeg = require("fluent-ffmpeg");
-
 const { spawn } = require("child_process");
 
 const PORT = process.env.PORT || 3000;
@@ -42,7 +40,7 @@ app.post("/process", async (req, res) => {
     return res.render("index", { message: "No file uploaded" });
   }
 
-  file.mv("tmp/" + file.name, (err) => {
+  file.mv( file.name, (err) => {
     if (err)
       return res.render("index", {
         ...data, loading: false,
@@ -51,11 +49,11 @@ app.post("/process", async (req, res) => {
   });
   const fileName = file.name.slice(0, -4);
 
-  const filePath = path.join(__dirname, "tmp");
+  const filePath = path.join(__dirname);
   const inputFilePath = filePath + "/" + file.name;
 
   const outputFileName = new Date() + "-separated_sound";
-  const outputDir = path.join(__dirname, "output");
+  const outputDir = path.join(__dirname);
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = outputVocalsPath + "/" + "vocals.mp3";
@@ -94,7 +92,7 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
       fs.unlink(inputFilePath, (err) => {
         if (err) throw new Error(err.message);
       })
-      deleteDirectory(outputDir);
+      deleteDirectory(outputFilePath);
     });
   });
 });
