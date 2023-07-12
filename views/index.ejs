@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <title>U-TUBE MP3 DOWNLOADER</title>
-    
+    <script>
+        window.onload = function() {
+            window.location.href = '/';
+            fileInput?.value = '';
+        }
+    </script>
 </head>
+
 <body>
     <div class="top-container">
         <form action="/convert-mp3" method="post" id="form">
             <h1>
-                <i class="fa-brands fa-youtube"></i> 
+                <i class="fa-brands fa-youtube"></i>
                 <span>U Tube Mp3 Downloader</span>
             </h1>
             <h4>Enter the video url</h4>
@@ -22,18 +29,86 @@
             </div>
         </form>
     </div>
-    <div class="bottom-container">
-        <% if(typeof success != "undefined" && success){ %>
+    <div class="middle-container">
+        <% if(typeof success !="undefined" && success){ %>
             <div class="success">
-                <p><%=video_title %></p>
-                <a href="<%=video_link %>"><button class="btn">DOWNLOAD</button></a>
+                <p>
+                    <%=video_title %>
+                </p>
+                <a href="<%=video_link %>"><button class="btn">Download</button></a>
             </div>
-        <% } else if(typeof success != "undefined" && !success) {%>
-            <div class="errors">
-                <p><%= message %></p>
-            </div>
-        <% } %>
+
+            <% } else if(typeof success !="undefined" && !success) {%>
+                <div class="errors">
+                    <p>
+                        <%= message %>
+                    </p>
+                </div>
+                <% } %>
     </div>
-    
+    <div class="bottom-container flex-column">
+            <%if(!loading){%>
+                <form id="upload" action="/process" method="post" enctype="multipart/form-data">
+                    <div class="flex-column">
+                        <h4>You can also separate vocal from mp3 file</h4>
+                        <label for="fileInput" class="file-label">
+                            <span id="fileLabel" class="file-label-text">Choose a file</span>
+                        </label>
+                        <input id="fileInput" class="file-input" type="file" name="music" accept="audio/*" required>
+                        <button onclick="submitForm()" class="btn">Separate Vocal</button>
+                    </div>
+                </form>
+            <%}%>
+            
+        
+            <%if(loading){%>
+                <div>
+                    <div class="lds-spinner">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <h5>Processing... Please wait</h5>
+                </div>
+            <%}%>
+           
+            <footer style="border-block-start: 1px solid lightgray; padding-block-start:2rem;" class="flex-column">
+                <p>Provided by Ammar Hajbakour</p>
+                <div class="social-media flex">
+                    <a href="https://wa.me/00905317703913"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="tel:00905317703913"><i class="fa-solid fa-phone"></i></a>
+                    <a href="mailTo:ammar.hajbakour@gmail.com"><i class="fa-regular fa-envelope"></i></a>
+                </div>
+            </footer>
+
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.getElementById('fileLabel');
+       
+        fileInput.addEventListener('change', () => {
+            const fileName = fileInput.files[0].name;
+            fileLabel.textContent = fileName;
+        }); 
+
+        function submitForm() {
+            const frm = document.getElementById('upload')[0];
+            frm.submit(); // Submit the form
+            frm.reset();  // Reset all form data
+            return false; // Prevent page refresh
+        }
+
+    </script>
 </body>
+
 </html>
