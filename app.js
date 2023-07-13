@@ -9,6 +9,7 @@ const fetch = require("node-fetch");
 const path = require("path");
 
 const { spawn } = require("child_process");
+const { renderFile } = require("ejs");
 
 const PORT = process.env.PORT || 3000;
 
@@ -31,7 +32,9 @@ app.get("/", (req, res) => {
 const data = {
   success: false,
   loading: false,
-  message: ''
+  message: '',
+  video_title: '',
+  video_link:'',
 }
 app.post("/process", async (req, res) => {
   const file = req.files.music;
@@ -39,7 +42,7 @@ app.post("/process", async (req, res) => {
   if (!req.files || !file) {
     return res.render("index", {...data, message: "No file uploaded" });
   }
-  const _file = path.join("tmp",file.name)
+  const _file = path.join(__dirname,"tmp",file.name)
   file.mv(_file, (err) => {
     if (err)
       return res.render("index", {
@@ -67,6 +70,7 @@ app.post("/process", async (req, res) => {
     deleteDirectory(outputFilePath);
   }
 
+  // res.render("index",{...data,loading: true,success: true, message: "vocals.mp3 file is generating, please wait..."})
   
   // pip install spleeter
  
@@ -82,14 +86,15 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
   const pythonProcess = spawn("python", ["-c", pythonScript]);
 
   pythonProcess.stdout.on("data", (data) => {
-    console.error(data);
   });
 
   pythonProcess.stderr.on("data", (data) => {
-    console.error(data);
   });
-
+  pythonProcess.on('error',(err)=>{
+    console.error(err);
+  })
   pythonProcess.on("close", (code) => {
+    console.error(code);
     if(!fs.existsSync(inputFilePath)) return res.render("index",{...data, message: "The vocal.mp3 has not been generated"})
     res.download(path.resolve(vocalsFile), (err) => {
       if (err) {
@@ -104,17 +109,20 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
             if (err) console.error(err.message);
           })
         }
+      }else{
+        if(fs.existsSync(inputFilePath)){
+          fs.unlink(inputFilePath, (err) => {
+            if (err) console.error(err.message);
+          })
+        }
+        if(fs.existsSync(outputFilePath)){
+          deleteDirectory(outputFilePath);
+        }
       }
-      if(fs.existsSync(inputFilePath)){
-        fs.unlink(inputFilePath, (err) => {
-          if (err) console.error(err.message);
-        })
-      }
-      if(fs.existsSync(outputFilePath)){
-        deleteDirectory(outputFilePath);
-      }
-    });
+    })
+    
   });
+ 
 });
 
 app.post("/convert-mp3", async (req, res) => {
