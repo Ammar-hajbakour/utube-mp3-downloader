@@ -91,7 +91,7 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
 
   pythonProcess.on("close", (code) => {
     if(!fs.existsSync(inputFilePath)) return res.render("index",{...data, message: "The vocal.mp3 has not been generated"})
-    res.download(vocalsFile, (err) => {
+    res.download(path.resolve(vocalsFile), (err) => {
       if (err) {
         console.error(err.message);
         res.render("index", {
