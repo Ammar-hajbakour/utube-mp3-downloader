@@ -56,7 +56,7 @@ app.post("/process", async (req, res) => {
   const inputFilePath = path.join(filePath, file.name);
 
   const outputFileName = new Date() + "-separated_sound";
-  const outputDir = path.join(__dirname,"output");
+  const outputDir = __dirname + "/output"
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
@@ -66,8 +66,8 @@ app.post("/process", async (req, res) => {
       if (err) console.error(err.message);
     })
   }
-  if(fs.existsSync(outputFilePath)){
-    deleteDirectory(outputFilePath);
+  if(fs.existsSync(outputDir)){
+    deleteDirectory(outputDir);
   }
 
   // res.render("index",{...data,loading: true,success: true, message: "vocals.mp3 file is generating, please wait..."})
@@ -115,8 +115,8 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
             if (err) console.error(err.message);
           })
         }
-        if(fs.existsSync(outputFilePath)){
-          deleteDirectory(outputFilePath);
+        if(fs.existsSync(outputDir)){
+          deleteDirectory(outputDir);
         }
       }
     })
