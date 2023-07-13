@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const fileUpload = require("express-fileupload");
+// const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const fsx = require("fs-extra");
 const fetch = require("node-fetch");
-
+const multer = require('multer')
 const path = require("path");
 
 const { spawn } = require("child_process");
@@ -19,14 +19,23 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir:"/tmp/",
-  })
-);
+// app.use(
+//   fileUpload({
+//     useTempFiles: true,
+//     tempFileDir:"/tmp/",
+//   })
+// );
 
-app.get("/", (req, res) => {
+const storage = multer.diskStorage({
+  destination: `${__dirname}/tmp/`,
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null,  uniqueSuffix +"-" +file.originalname )
+  }
+})
+const upload = multer({ storage:storage })
+
+app.get("/",(req, res) => {
   res.render("index", { loading: false });
 });
 const data = {
@@ -36,39 +45,40 @@ const data = {
   video_title: '',
   video_link:'',
 }
-app.post("/process", async (req, res) => {
-  const file = req.files.music;
-  
-  if (!req.files || !file) {
+app.post("/process",upload.single('music'), async (req, res) => {
+  const file = req.file;
+  console.log(file);
+  if (!file) {
     return res.render("index", {...data, message: "No file uploaded" });
   }
-  const _file = path.join(__dirname,"tmp",file.name)
-  file.mv(_file, (err) => {
-    if (err)
-      return res.render("index", {
-        ...data, loading: false,
-        message: `File Upload Error : ${err.message}`,
-      });
-  });
-  const fileName = file.name.slice(0, -4);
+  // const _file = path.join(__dirname,"tmp",file.filename)
+  // file.mv(_file, (err) => {
+  //   if (err)
+  //     return res.render("index", {
+  //       ...data, loading: false,
+  //       message: `File Upload Error : ${err.message}`,
+  //     });
+  // });
+  const fileName = file.filename.slice(0, -4);  
+  // const fileName = file.filename + '.mp3';
 
   const filePath = path.join(__dirname,"tmp");
-  const inputFilePath = path.join(filePath, file.name);
+  const inputFilePath = path.join(filePath, file.filename);
 
   const outputFileName = new Date() + "-separated_sound";
   const outputDir = __dirname + "/output"
   const outputFilePath = path.join(outputDir, outputFileName);
-  const outputVocalsPath = path.join(outputFilePath, fileName);
+  const outputVocalsPath = path.join(outputFilePath,fileName);
   const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
 
-  if(fs.existsSync(inputFilePath)){
-    fs.unlink(inputFilePath, (err) => {
-      if (err) console.error(err.message);
-    })
-  }
-  if(fs.existsSync(outputDir)){
-    deleteDirectory(outputDir);
-  }
+  // if(fs.existsSync(inputFilePath)){
+  //   fs.unlink(inputFilePath, (err) => {
+  //     if (err) console.error(err.message);
+  //   })
+  // }
+  // if(fs.existsSync(outputDir)){
+  //   deleteDirectory(outputDir);
+  // }
 
   // res.render("index",{...data,loading: true,success: true, message: "vocals.mp3 file is generating, please wait..."})
   
@@ -95,7 +105,7 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
   })
   pythonProcess.on("close", (code) => {
     console.error(code);
-    if(!fs.existsSync(inputFilePath)) return res.render("index",{...data, message: "The vocal.mp3 has not been generated"})
+    if(!fs.existsSync(vocalsFile)) return res.render("index",{...data, message: "The vocal.mp3 has not been generated"})
     res.download(path.resolve(vocalsFile), (err) => {
       if (err) {
         console.error(err.message);
