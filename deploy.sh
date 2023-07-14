@@ -5,3 +5,5 @@ echo $PATH
 
 npm install --production --no-cache --force
 pip3 install spleeter tensorflow
+python3 -m site --user-site
+
