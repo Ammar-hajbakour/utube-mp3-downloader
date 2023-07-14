@@ -19,6 +19,7 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
 const data = {
   success: undefined,
   loading: false,
@@ -44,7 +45,7 @@ app.use(
 // const upload = multer({ storage:storage })
 
 app.get("/", (req, res) => {
-  res.render("index", { ...data});
+  res.render("index", { ...data });
 });
 
 // ,upload.single('music')
@@ -57,37 +58,33 @@ app.post("/process", (req, res) => {
   const _file = path.join(__dirname, "tmp", file.name);
   file.mv(_file, (err) => {
     if (err)
-    return res.render("index", {
-      ...data,
-      loading: false,
-      message: `File Upload Error : ${err.message}`,
-    });
+      return res.render("index", {
+        ...data,
+        loading: false,
+        message: `File Upload Error : ${err.message}`,
+      });
   });
   // const fileName = file.filename.slice(0, -4);
   const fileName = file.name.slice(0, -4);
-  
+
   const filePath = path.join(__dirname, "tmp");
   // const inputFilePath = path.join(filePath, file.filename);
   const inputFilePath = path.join(filePath, file.name);
-  
+
   const outputFileName = new Date().toISOString() + "-separated_sound";
   const outputDir = path.join(__dirname, "output");
   const outputFilePath = path.join(outputDir, outputFileName);
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
-  
-  
+  const musicFile = path.join(outputVocalsPath, "accompaniment.mp3");
 
-  const pythonScript = `
-import os
-from spleeter.separator import Separator
-input_file = os.path.abspath("${inputFilePath}")
-output_dir = os.path.abspath("${outputFilePath}")
-separator = Separator('spleeter:2stems')
-separator.separate_to_file(input_file, output_dir, codec='mp3')
-`;
-
-  const pythonProcess = spawn("python", ["-c", pythonScript]);
+  process.env.PATH = '/opt/render/.local/bin';
+  console.log(process.env.PYTHONPATH)
+  const pythonProcess = spawn("python", [
+    path.join(__dirname, 'separate.py'),
+    inputFilePath,
+    outputFilePath,
+  ]);
 
   pythonProcess.stdout.on("data", (data) => {
     console.error(data.toString());
@@ -106,27 +103,29 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
         message: `File Generating Error : Code = ${code}`,
       });
     } else {
-
       const { status, message } = downloadFile(res, vocalsFile);
 
       if (status === "failed") {
-        if (fs.existsSync(inputFilePath)) fs.unlink(inputFilePath,(err)=>{
-          if (err) console.log(err.message);
-        });
+        if (fs.existsSync(inputFilePath))
+          fs.unlink(inputFilePath, (err) => {
+            if (err) console.log(err.message);
+          });
         return res.render("index", {
           ...data,
           loading: false,
           success: false,
           message: message,
         });
-      }else{
-        if (fs.existsSync(inputFilePath)) fs.unlink(inputFilePath,(err)=>{
-          if (err) console.log(err.message);
-        });
-        if (fs.existsSync(outputFilePath)) fsx.remove(outputFilePath,(err)=>{
-          if (err) console.log(err.message);
-        });
-      } 
+      } else {
+        if (fs.existsSync(inputFilePath))
+          fs.unlink(inputFilePath, (err) => {
+            if (err) console.log(err.message);
+          });
+        if (fs.existsSync(outputFilePath))
+          fsx.remove(outputFilePath, (err) => {
+            if (err) console.log(err.message);
+          });
+      }
     }
   });
 });
