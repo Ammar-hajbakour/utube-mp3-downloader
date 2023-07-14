@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH="/opt/render/.local/bin:$PATH"
+export PATH="/opt/render/.local/bin:adata>=4.4 in /usr/local/lib/python3.7/dist-packages:$PATH"
 echo $PATH
 
 npm install --production --no-cache --force
