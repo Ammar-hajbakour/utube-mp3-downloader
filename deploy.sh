@@ -1,8 +1,6 @@
 #!/bin/bash
 
-echo 'export PATH=$PATH:/opt/render/.local/bin'  >> ~/.bash_profile
-setenv PATH $PATH:/opt/render/.local/bin
-
+export PATH="/opt/render/.local/bin:$PATH"
 echo $PATH
 
 npm install --production --no-cache --force
