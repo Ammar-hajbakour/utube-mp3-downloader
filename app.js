@@ -27,48 +27,48 @@ const data = {
   video_link: "",
 };
 
-// app.use(
-//   fileUpload({
-//     useTempFiles: true,
-//     tempFileDir: "/tmp/",
-//   })
-// );
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
-const storage = multer.diskStorage({
-  destination: `${__dirname}/tmp/`,
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null,  uniqueSuffix +"-" +file.originalname )
-  }
-})
-const upload = multer({ storage:storage })
+// const storage = multer.diskStorage({
+//   destination: `${__dirname}/tmp/`,
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+//     cb(null,  uniqueSuffix +"-" +file.originalname )
+//   }
+// })
+// const upload = multer({ storage:storage })
 
 app.get("/", (req, res) => {
   res.render("index", { ...data});
 });
 
 // ,upload.single('music')
-app.post("/process",upload.single('music'), (req, res) => {
-  const file = req.file
-  // const file = req.files.music;
+app.post("/process", (req, res) => {
+  // const file = req.file
+  const file = req.files.music;
   if (!file) {
     return res.render("index", { ...data, message: "No file uploaded" });
   }
-  // const _file = path.join(__dirname, "tmp", file.name);
-  // file.mv(_file, (err) => {
-  //   if (err)
-  //   return res.render("index", {
-  //     ...data,
-  //     loading: false,
-  //     message: `File Upload Error : ${err.message}`,
-  //   });
-  // });
-  const fileName = file.filename.slice(0, -4);
-  // const fileName = file.name.slice(0, -4);
+  const _file = path.join(__dirname, "tmp", file.name);
+  file.mv(_file, (err) => {
+    if (err)
+    return res.render("index", {
+      ...data,
+      loading: false,
+      message: `File Upload Error : ${err.message}`,
+    });
+  });
+  // const fileName = file.filename.slice(0, -4);
+  const fileName = file.name.slice(0, -4);
   
   const filePath = path.join(__dirname, "tmp");
-  const inputFilePath = path.join(filePath, file.filename);
-  // const inputFilePath = path.join(filePath, file.name);
+  // const inputFilePath = path.join(filePath, file.filename);
+  const inputFilePath = path.join(filePath, file.name);
   
   const outputFileName = new Date().toISOString() + "-separated_sound";
   const outputDir = path.join(__dirname, "output");
