@@ -7,3 +7,4 @@ npm install --production --no-cache --force
 python3 -m pip install --upgrade pip
 pip3 install spleeter tensorflow
 python3 -m site --user-site
+python3 --version
