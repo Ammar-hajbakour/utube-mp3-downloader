@@ -78,9 +78,8 @@ app.post("/process", (req, res) => {
   const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
   const musicFile = path.join(outputVocalsPath, "accompaniment.mp3");
 
-  process.env.PATH = '/opt/render/.local/bin';
-  console.log(process.env.PYTHONPATH)
-  const pythonProcess = spawn("python", [
+
+  const pythonProcess = spawn("python3", [
     path.join(__dirname, 'separate.py'),
     inputFilePath,
     outputFilePath,

@@ -4,4 +4,4 @@ echo 'export PATH=$PATH:/opt/render/.local/bin'  >> ~/.bash_profile
 setenv PATH $PATH:/opt/render/.local/bin
 
 npm install --production --no-cache --force
-pip install spleeter tensorflow
+pip3 install spleeter tensorflow
