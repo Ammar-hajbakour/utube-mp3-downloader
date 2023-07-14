@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-// const fileUpload = require("express-fileupload");
 const fs = require("fs");
 const fsx = require("fs-extra");
 const fetch = require("node-fetch");
-const multer = require('multer')
+const fileUpload = require("express-fileupload");
+const multer = require("multer");
 const path = require("path");
 
 const { spawn } = require("child_process");
@@ -19,10 +19,18 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const data = {
+  success: undefined,
+  loading: false,
+  message: "",
+  video_title: "",
+  video_link: "",
+};
+
 // app.use(
 //   fileUpload({
 //     useTempFiles: true,
-//     tempFileDir:"/tmp/",
+//     tempFileDir: "/tmp/",
 //   })
 // );
 
@@ -35,55 +43,41 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage:storage })
 
-app.get("/",(req, res) => {
-  res.render("index", { loading: false });
+app.get("/", (req, res) => {
+  res.render("index", { ...data});
 });
-const data = {
-  success: false,
-  loading: false,
-  message: '',
-  video_title: '',
-  video_link:'',
-}
-app.post("/process",upload.single('music'), async (req, res) => {
-  const file = req.file;
-  console.log(file);
+
+// ,upload.single('music')
+app.post("/process",upload.single('music'), (req, res) => {
+  const file = req.file
+  // const file = req.files.music;
   if (!file) {
-    return res.render("index", {...data, message: "No file uploaded" });
+    return res.render("index", { ...data, message: "No file uploaded" });
   }
-  // const _file = path.join(__dirname,"tmp",file.filename)
+  // const _file = path.join(__dirname, "tmp", file.name);
   // file.mv(_file, (err) => {
   //   if (err)
-  //     return res.render("index", {
-  //       ...data, loading: false,
-  //       message: `File Upload Error : ${err.message}`,
-  //     });
+  //   return res.render("index", {
+  //     ...data,
+  //     loading: false,
+  //     message: `File Upload Error : ${err.message}`,
+  //   });
   // });
-  const fileName = file.filename.slice(0, -4);  
-  // const fileName = file.filename + '.mp3';
-
-  const filePath = path.join(__dirname,"tmp");
-  const inputFilePath = path.join(filePath, file.filename);
-
-  const outputFileName = new Date() + "-separated_sound";
-  const outputDir = __dirname + "/output"
-  const outputFilePath = path.join(outputDir, outputFileName);
-  const outputVocalsPath = path.join(outputFilePath,fileName);
-  const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
-
-  // if(fs.existsSync(inputFilePath)){
-  //   fs.unlink(inputFilePath, (err) => {
-  //     if (err) console.error(err.message);
-  //   })
-  // }
-  // if(fs.existsSync(outputDir)){
-  //   deleteDirectory(outputDir);
-  // }
-
-  // res.render("index",{...data,loading: true,success: true, message: "vocals.mp3 file is generating, please wait..."})
+  const fileName = file.filename.slice(0, -4);
+  // const fileName = file.name.slice(0, -4);
   
-  // pip install spleeter
- 
+  const filePath = path.join(__dirname, "tmp");
+  const inputFilePath = path.join(filePath, file.filename);
+  // const inputFilePath = path.join(filePath, file.name);
+  
+  const outputFileName = new Date().toISOString() + "-separated_sound";
+  const outputDir = path.join(__dirname, "output");
+  const outputFilePath = path.join(outputDir, outputFileName);
+  const outputVocalsPath = path.join(outputFilePath, fileName);
+  const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
+  
+  
+
   const pythonScript = `
 import os
 from spleeter.separator import Separator
@@ -96,44 +90,61 @@ separator.separate_to_file(input_file, output_dir, codec='mp3')
   const pythonProcess = spawn("python", ["-c", pythonScript]);
 
   pythonProcess.stdout.on("data", (data) => {
+    console.error(data.toString());
   });
 
   pythonProcess.stderr.on("data", (data) => {
+    console.error(data.toString());
   });
-  pythonProcess.on('error',(err)=>{
-    console.error(err);
-  })
-  pythonProcess.on("close", (code) => {
-    console.error(code);
-    if(!fs.existsSync(vocalsFile)) return res.render("index",{...data, message: "The vocal.mp3 has not been generated"})
-    res.download(path.resolve(vocalsFile), (err) => {
-      if (err) {
-        console.error(err.message);
-        res.render("index", {
-          ...data, loading: false,
-          message: `File downloading Error : ${err.message}`,
+  pythonProcess.on("close", async (code) => {
+    if (!fs.existsSync(vocalsFile)) {
+      if (fs.existsSync(inputFilePath)) fs.unlinkSync(inputFilePath);
+      return res.render("index", {
+        ...data,
+        loading: false,
+        success: false,
+        message: `File Generating Error : Code = ${code}`,
+      });
+    } else {
+
+      const { status, message } = downloadFile(res, vocalsFile);
+
+      if (status === "failed") {
+        if (fs.existsSync(inputFilePath)) fs.unlink(inputFilePath,(err)=>{
+          if (err) console.log(err.message);
         });
-        
-        if(fs.existsSync(inputFilePath)){
-          fs.unlink(inputFilePath, (err) => {
-            if (err) console.error(err.message);
-          })
-        }
+        return res.render("index", {
+          ...data,
+          loading: false,
+          success: false,
+          message: message,
+        });
       }else{
-        if(fs.existsSync(inputFilePath)){
-          fs.unlink(inputFilePath, (err) => {
-            if (err) console.error(err.message);
-          })
-        }
-        if(fs.existsSync(outputDir)){
-          deleteDirectory(outputDir);
-        }
-      }
-    })
-    
+        if (fs.existsSync(inputFilePath)) fs.unlink(inputFilePath,(err)=>{
+          if (err) console.log(err.message);
+        });
+        if (fs.existsSync(outputFilePath)) fsx.remove(outputFilePath,(err)=>{
+          if (err) console.log(err.message);
+        });
+      } 
+    }
   });
- 
 });
+function downloadFile(res, filePath) {
+  let result = {
+    status: "success",
+    message: `Vocal file downloaded successfully.`,
+  };
+  res.download(path.resolve(filePath), (err) => {
+    if (err) {
+      result = {
+        status: "failed",
+        message: `File downloading Error : ${err.message}`,
+      };
+    }
+  });
+  return result;
+}
 
 app.post("/convert-mp3", async (req, res) => {
   const videoUrl = req.body.videoUrl;
@@ -175,12 +186,3 @@ app.post("/convert-mp3", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log("Server listening on port " + PORT));
-
-async function deleteDirectory(directoryPath) {
-  try {
-    await fsx.remove(directoryPath);
-    console.log(`Directory deleted: ${directoryPath}`);
-  } catch (error) {
-    console.error("Error deleting directory:", error);
-  }
-}

@@ -17,10 +17,12 @@
 <body>
     <div class="top-container">
         <form action="/convert-mp3" method="post" id="form">
-            <h1>
-            <i class="fa-brands fa-youtube"></i>
-            <span>U Tube Mp3 Downloader</span>
-            </h1>
+            <a href="/">
+                <h1>
+                    <i class="fa-brands fa-youtube"></i>
+                    <span>U Tube Mp3 Downloader</span>
+                    </h1>
+            </a>
             <h4>Enter the video url</h4>
             <div class="flex relativeP">
                 <input
@@ -41,7 +43,7 @@
             </div>                                          
         <%}%>
     <% if(typeof success !="undefined" && success && video_title.length !== 0){ %>
-    <div class="success">
+    <div class="download-section">
         <p><%=video_title %></p>
         <a href="<%=video_link %>"><button class="btn">Download</button></a>
     </div>
@@ -58,42 +60,43 @@
                 action="/process"
                 method="post"
                 enctype="multipart/form-data"
+                onSubmit="submitForm()"
             >
                 <div class="flex-column">
-                <h4>You can also separate vocal from mp3 file</h4>
-                <label for="fileInput" class="file-label">
-                    <span id="fileLabel" class="file-label-text">Choose a file</span>
-                </label>
-                <input
-                    id="fileInput"
-                    class="file-input"
-                    type="file"
-                    name="music"
-                    accept="audio/*"
-                    required
-                />
-                <button onclick="submitForm()" class="btn">Separate Vocal</button>
+                    <h4>You can also separate vocal from mp3 file</h4>
+                    <label for="fileInput" class="file-label">
+                        <span id="fileLabel" class="file-label-text">Choose a file</span>
+                    </label>
+                    <input
+                        id="fileInput"
+                        class="file-input"
+                        type="file"
+                        name="music"
+                        accept="audio/*"
+                        required
+                    />
+                    <input type="submit" id="submit" class="btn" value="Separate Vocal">
                 </div>
             </form>
         <%}%> <%if(loading){%>
-    <div>
-        <div class="lds-spinner">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        </div>
-        <h5>Processing... Please wait</h5>
-    </div>
-    <%}%>
+            <div id="loader" class="loader flex-column">
+                <div class="lds-spinner">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                </div>
+                <h5>Processing... Please wait</h5>
+            </div>
+        <%}%>
 
     <footer
         style="
@@ -118,13 +121,15 @@
     <script>
     const fileInput = document.getElementById("fileInput");
     const fileLabel = document.getElementById("fileLabel");
-
+    const loader = document.getElementById("loader")
     fileInput.addEventListener("change", () => {
         const fileName = fileInput.files[0].name;
         fileLabel.textContent = fileName;
     });
 
     function submitForm(e) {
+        document.getElementById('submit').disabled=true;
+        document.getElementById('loader').style.display = 'block'
         const frm = document.getElementById("upload")[0];
         frm.submit(); // Submit the form
         fileInput.value = ''; 
