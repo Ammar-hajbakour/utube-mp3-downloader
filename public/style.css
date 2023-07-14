@@ -18,19 +18,26 @@ body,html{
   font-family: 'Orbitron', sans-serif;
   overflow-x: hidden;
   letter-spacing: 1px;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
-  display: grid;
+  
+}
+body{
+  /* display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(auto-fit,minmax(300px,1fr));
   grid-template-areas: "top"
                         "middle"
-                        "bottom";
+                      "bottom"; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
 }
-
 .top-container{
   grid-area: top;
   width: 100%;
+
   background-color: var(--red);
   padding:1rem;
 
@@ -38,6 +45,7 @@ body,html{
 .middle-container{
   grid-area: middle;
     width: 100%;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -49,6 +57,7 @@ body,html{
 .bottom-container{
   grid-area: bottom;
     width: 100%;
+    height: fit-content;
     background-color: var(--red);
     padding: 2rem 1rem;
     justify-content: space-between;
