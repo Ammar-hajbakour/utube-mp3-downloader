@@ -102,8 +102,8 @@ app.post("/process", (req, res) => {
         message: `File Generating Error : Code = ${code}`,
       });
     } else {
-      const { status, message } = downloadFile(res, vocalsFile);
-
+      const vocalDownloader = downloadFile(res, vocalsFile);
+      const {status,message} = vocalDownloader
       if (status === "failed") {
         if (fs.existsSync(inputFilePath))
           fs.unlink(inputFilePath, (err) => {
