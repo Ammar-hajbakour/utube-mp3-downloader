@@ -77,22 +77,22 @@ app.post("/process", (req, res) => {
   const outputVocalsPath = path.join(outputFilePath, fileName);
   const vocalsFile = path.join(outputVocalsPath, "vocals.mp3");
   const musicFile = path.join(outputVocalsPath, "accompaniment.mp3");
+  const spleeterPath = path.join(__dirname, 'node_modules', 'spleeter', 'bin', 'macos', 'spleeter');
+  const spleeterProcess = spawn('spleeter', ['separate', '-i', inputFilePath, '-p', 'spleeter:2stems', '-o', outputFilePath]);
+  // const pythonProcess = spawn("python3", [
+  //   path.join(__dirname, 'separate.py'),
+  //   inputFilePath,
+  //   outputFilePath,
+  // ]);
 
-
-  const pythonProcess = spawn("python3", [
-    path.join(__dirname, 'separate.py'),
-    inputFilePath,
-    outputFilePath,
-  ]);
-
-  pythonProcess.stdout.on("data", (data) => {
+  spleeterProcess.stdout.on("data", (data) => {
     console.error(data.toString());
   });
 
-  pythonProcess.stderr.on("data", (data) => {
+  spleeterProcess.stderr.on("data", (data) => {
     console.error(data.toString());
   });
-  pythonProcess.on("close", async (code) => {
+  spleeterProcess.on("close", async (code) => {
     if (!fs.existsSync(vocalsFile)) {
       if (fs.existsSync(inputFilePath)) fs.unlinkSync(inputFilePath);
       return res.render("index", {
